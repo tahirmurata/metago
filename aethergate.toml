@@ -1,0 +1,13 @@
+# Version of aethergate
+version = 1
+# Domain of vanity remote import'
+domain = 'go.tahirmurata.com'
+
+# List of repositories to serve
+[[repository]]
+# Path of vanity remote import
+path = 'jkr'
+# Version control system
+vcs = 'git'
+# Repository URL'
+repo = 'https://github.com/tahirmurata/jkr'
