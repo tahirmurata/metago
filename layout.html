@@ -2,7 +2,7 @@
 <html>
     <head>
         {{.MetaTags}}
-        <meta http-equiv="refresh" content="0;url={{.Repo}}" />
+        <meta http-equiv="refresh" content="0;url=https://pkg.go.dev/{{.Domain}}/{{.Path}}" />
         <meta name="robots" content="noindex,noarchive" />
         <style>
             html {
@@ -35,7 +35,7 @@
     </head>
     <body>
         <p class="centered-text">
-            Redirecting to <a href="{{.Repo}}" class="repo-link">repository</a>...
+            Redirecting to <a href="https://pkg.go.dev/{{.Domain}}/{{.Path}}" class="repo-link">package reference</a>...
         </p>
     </body>
-</html>
+</html> 
