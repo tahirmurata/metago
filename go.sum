@@ -4,6 +4,7 @@ github.com/tdewolff/minify/v2 v2.23.5 h1:/P548KcpTkIOUvNg22zN83/GiaYSOIrbqtoue4I
 github.com/tdewolff/minify/v2 v2.23.5/go.mod h1:2RI9tiIrzJU1Z5EasXEPaI1MqobRyxKHOOgrRkq5oEw=
 github.com/tdewolff/parse/v2 v2.8.0 h1:jW0afj6zpUGXuZTwJ7/UfP2SddyLalb/SDryjaMTkA4=
 github.com/tdewolff/parse/v2 v2.8.0/go.mod h1:Hwlni2tiVNKyzR1o6nUs4FOF07URA+JLBLd6dlIXYqo=
+github.com/tdewolff/test v1.0.11 h1:FdLbwQVHxqG16SlkGveC0JVyrJN62COWTRyUFzfbtBE=
 github.com/tdewolff/test v1.0.11/go.mod h1:XPuWBzvdUzhCuxWO1ojpXsyzsA5bFoS3tO/Q3kFuTG8=
 go.endfieldind.com/aethergate v0.0.0-20250614125012-273cc67b6927 h1:leR6Te4Vk6pTSREQ1iZFk+04jkZ96gYvJtEl8/1+leQ=
 go.endfieldind.com/aethergate v0.0.0-20250614125012-273cc67b6927/go.mod h1:saGZ/8PPTqMpv7wJlFbxT592umhBwH+VoHw7J5RhUw4=
