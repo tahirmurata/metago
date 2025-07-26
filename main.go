@@ -119,7 +119,7 @@ const htmlTemplate = `
 <html>
 	<head>
 		<meta name="go-import" content="{{.Path}} {{.VCS}} {{.Repo}}" />
-		<meta http-equiv="refresh" content="0;url=https://pkg.go.dev/{{.Repo}}" />
+		<meta http-equiv="refresh" content="0;url=https://pkg.go.dev/{{.Path}}" />
 		<meta name="robots" content="noindex,noarchive" />
 		<meta name="generator" content="gometa" />
 		<style>
