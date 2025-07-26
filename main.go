@@ -89,7 +89,6 @@ func main() {
 				Path: fmt.Sprintf("%s/%s", CLI.Build.Domain, r[0]),
 				VCS:  r[1],
 				Repo: r[2],
-				Doc:  fmt.Sprintf("pkg.go.dev/%s", r[0]),
 			}
 
 			mr := m.Writer("text/html", h)
@@ -113,7 +112,6 @@ type Data struct {
 	Path string
 	VCS  string
 	Repo string
-	Doc  string
 }
 
 const htmlTemplate = `
@@ -121,7 +119,7 @@ const htmlTemplate = `
 <html>
 	<head>
 		<meta name="go-import" content="{{.Path}} {{.VCS}} {{.Repo}}" />
-		<meta http-equiv="refresh" content="0;url=https://{{.Doc}}" />
+		<meta http-equiv="refresh" content="0;url=https://pkg.go.dev/{{.Repo}}" />
 		<meta name="robots" content="noindex,noarchive" />
 		<meta name="generator" content="gometa" />
 		<style>
