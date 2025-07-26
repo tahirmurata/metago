@@ -1,10 +1,10 @@
-module go.tahirmurata.com/go
+module go.tahirmurata.com/gometa
 
-go 1.24.4
+go 1.24.3
 
 require (
-	github.com/pelletier/go-toml/v2 v2.2.4
-	github.com/tdewolff/minify/v2 v2.23.5
+	github.com/alecthomas/kong v1.12.1
+	github.com/tdewolff/minify/v2 v2.23.10
 )
 
-require github.com/tdewolff/parse/v2 v2.8.0 // indirect
+require github.com/tdewolff/parse/v2 v2.8.1 // indirect

@@ -1,139 +1,163 @@
-// Copyright 2025 endmin
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 /*
-aethergate is a tool that generates static files to support vanity Go remote
-import paths.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 
-It allows you to create vanity remote import paths like `import example.com/pkg`
-while hosting your code on platforms such as GitHub, GitLab, or SourceHut. Each
-repository defined in the `aethergate.toml` configuration file generates an
-`index.html` file containing `go-import` meta tags, which redirect the go tool
-to the actual repository.
-
-Usage:
-
-	aethergate [command]
-
-Commands:
-
-	init
-		Initialize a new config and layout file
-
-	build <dir>
-		Build static site
-
-Customization:
-
-	aethergate.toml
-		The configuration file. Use it to define your vanity imports.
-
-	layout.html
-		The HTML template for generating pages. Available template actions:
-
-		{{.MetaTags}}: Outputs the required meta tags for Go imports.
-		{{.Domain}}: The domain of the import path.
-		{{.Path}}: The path component of the import.
-		{{.VCS}}: The version control system (e.g., git, hg).
-		{{.Repo}}: The repository URL.
-*/
 package main
 
 import (
-	"flag"
+	"encoding/csv"
 	"fmt"
+	"html/template"
 	"os"
+	"slices"
+
+	"github.com/alecthomas/kong"
+	"github.com/tdewolff/minify/v2/minify"
 )
 
-const (
-	config = "aethergate.toml"
-	layout = "layout.html"
-)
+var CLI struct {
+	Init struct {
+	} `cmd:"" help:"Initialize config file."`
+
+	Build struct {
+		Domain string `arg:"" help:"The domain."`
+	} `cmd:"" help:"Build the html files."`
+}
 
 func main() {
-	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-	initCmd.Usage = func() {
-		fmt.Fprintln(initCmd.Output(), "Usage: aethergate init")
-	}
-	buildCmd := flag.NewFlagSet("build", flag.ExitOnError)
-	buildCmd.Usage = func() {
-		fmt.Fprintln(buildCmd.Output(), "Usage: aethergate build <dir>")
-	}
-
-	if len(os.Args) <= 1 {
-		fmt.Println("error: no command specified.")
-		fmt.Println("Try 'aethergate -h' for more information.")
-		os.Exit(1)
-	}
-
-	switch os.Args[1] {
+	ctx := kong.Parse(&CLI)
+	switch ctx.Command() {
 	case "init":
-		initCmd.Parse(os.Args[2:])
-		cfg := DefaultConfig()
-
-		if _, err := os.Stat(config); os.IsNotExist(err) {
-			WriteDefault(cfg, config)
-			fmt.Println("Created config file")
-		} else if err != nil {
-			fmt.Println("error:", err)
-			os.Exit(1)
-		} else {
-			fmt.Println("Config file already exists")
+		if _, err := os.Stat("gometa.csv"); !os.IsNotExist(err) {
+			panic("Config file already exists")
 		}
 
-		if _, err := os.Stat(layout); os.IsNotExist(err) {
-			err := WriteDefaultLayout(layout)
-			if err != nil {
-				fmt.Println("error:", err)
-				os.Exit(1)
+		f, err := os.Create("gometa.csv")
+		if err != nil {
+			panic(fmt.Errorf("Could not create config file: %w", err))
+		}
+		defer f.Close()
+
+		cw := csv.NewWriter(f)
+		cw.Write([]string{"package", "vcs", "repo"})
+		cw.Write([]string{"gometa", "git", "github.com/tahirmurata/gometa"})
+		cw.Flush()
+
+	case "build <domain>":
+		err := os.RemoveAll("dist")
+		if err != nil {
+			panic(fmt.Errorf("Failed to remove all dist folder: %w", err))
+		}
+
+		if _, err := os.Stat("gometa.csv"); os.IsNotExist(err) {
+			panic("Config file does not exist")
+		}
+
+		err = os.Mkdir("dist", 0755)
+		if err != nil {
+			panic(fmt.Errorf("Failed to make dist dir: %w", err))
+		}
+
+		f, err := os.Open("gometa.csv")
+		if err != nil {
+			panic(fmt.Errorf("Could not open config file: %w", err))
+		}
+		defer f.Close()
+		cr := csv.NewReader(f)
+		s, err := cr.ReadAll()
+		if err != nil {
+			panic(fmt.Errorf("Failed to read all csv: %w", err))
+		}
+		s = slices.Delete(s, 0, 1)
+
+		m := minify.Default
+
+		for _, r := range s {
+			if len(r) != 3 {
+				panic("More or less records")
 			}
-			fmt.Println("Created layout file")
-		} else if err != nil {
-			fmt.Println("error:", err)
-			os.Exit(1)
-		} else {
-			fmt.Println("Layout file already exists")
-		}
-	case "build":
-		buildCmd.Parse(os.Args[2:])
-		buildDir := "dist"
-		if buildCmd.Arg(0) != "" {
-			buildDir = buildCmd.Arg(0)
-		}
-		cfg, err := Load(config)
-		if err != nil {
-			fmt.Println("error:", err)
-			os.Exit(1)
+
+			h, err := os.Create(fmt.Sprintf("dist/%s.html", r[0]))
+			if err != nil {
+				panic(fmt.Errorf("Failed to create dir: %w", err))
+			}
+			defer h.Close()
+
+			data := Data{
+				Path: fmt.Sprintf("%s/%s", CLI.Build.Domain, r[0]),
+				VCS:  r[1],
+				Repo: r[2],
+				Doc:  fmt.Sprintf("pkg.go.dev/%s", r[0]),
+			}
+
+			mr := m.Writer("text/html", h)
+			defer mr.Close()
+
+			t := template.Must(template.New("html").Parse(htmlTemplate))
+			err = t.ExecuteTemplate(mr, "html", data)
+			if err != nil {
+				panic(fmt.Errorf("Failed to execute html template: %w", err))
+			}
+
+			h.Sync()
 		}
 
-		err = Build(cfg, layout, buildDir)
-		if err != nil {
-			fmt.Println("error:", err)
-			os.Exit(1)
-		}
-
-		fmt.Println("Site built successfully")
-	case "-h", "--h", "-help", "--help":
-		fmt.Println(`Usage: aethergate [command]
-Commands:
-  init
-        Initialize a new config and layout file
-  build <dir>
-        Build static site`)
 	default:
-		fmt.Println("error: no command specified.")
-		fmt.Println("Try 'aethergate -h' for more information.")
-		os.Exit(1)
+		panic(ctx.Command())
 	}
 }
+
+type Data struct {
+	Path string
+	VCS  string
+	Repo string
+	Doc  string
+}
+
+const htmlTemplate = `
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="go-import" content="{{.Path}} {{.VCS}} {{.Repo}}" />
+		<meta http-equiv="refresh" content="0;url=https://{{.Doc}}" />
+		<meta name="robots" content="noindex,noarchive" />
+		<meta name="generator" content="gometa" />
+		<style>
+			html,
+			:host {
+				background-color: hsl(220deg 23% 95%);
+				color: hsl(234deg 16% 35%);
+				-webkit-text-size-adjust: 100%;
+				font-family:
+					ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+					"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+				font-feature-settings: normal;
+				font-variation-settings: normal;
+			}
+
+			@media (prefers-color-scheme: dark) {
+				html {
+					background-color: hsl(240deg 21% 15%);
+					color: hsl(226deg 64% 88%);
+				}
+			}
+
+			a {
+				color: inherit;
+				-webkit-text-decoration: inherit;
+				text-decoration: underline;
+			}
+
+			p {
+				text-align: center;
+				margin-top: 1.44rem;
+			}
+		</style>
+	</head>
+	<body>
+		<p>Redirecting to <a href="https://{{.Repo}}">Go Packages</a>...</p>
+	</body>
+</html>
+`
