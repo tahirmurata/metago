@@ -18,6 +18,6 @@ create-pages:
       metago,git,gitlab.com/paste/metago
       jkr,git,gitlab.com/paste/jkr
       eyespy,git,gitlab.com/paste/eyespy
-      3y3,git,gitlab.com/paste/3y3
+      i,git,gitlab.com/paste/i
       EOF
     - go run . build go.tahirmurata.com
