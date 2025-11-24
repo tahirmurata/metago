@@ -172,8 +172,8 @@ const htmlTemplate = `
 		<style>
 			html,
 			:host {
-				background-color: hsl(220deg 23% 95%);
-				color: hsl(234deg 16% 35%);
+				background-color: oklch(98.5% 0 0);
+				color: oklch(37% 0.013 285.805);
 				-webkit-text-size-adjust: 100%;
 				font-family:
 					ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
@@ -184,8 +184,8 @@ const htmlTemplate = `
 
 			@media (prefers-color-scheme: dark) {
 				html {
-					background-color: hsl(240deg 21% 15%);
-					color: hsl(226deg 64% 88%);
+					background-color: oklch(14.1% 0.005 285.823);
+					color: oklch(87.1% 0.006 286.286);
 				}
 			}
 
