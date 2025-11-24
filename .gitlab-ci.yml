@@ -12,4 +12,12 @@ create-pages:
   before_script:
     - go mod tidy
   script:
+    - |
+      cat <<EOF > metago.csv
+      package,vcs,repo
+      metago,git,gitlab.com/paste/metago
+      jkr,git,gitlab.com/paste/jkr
+      eyespy,git,gitlab.com/paste/eyespy
+      3y3,git,gitlab.com/paste/3y3
+      EOF
     - go run . go.tahirmurata.com
