@@ -20,4 +20,4 @@ create-pages:
       eyespy,git,gitlab.com/paste/eyespy
       3y3,git,gitlab.com/paste/3y3
       EOF
-    - go run . go.tahirmurata.com
+    - go run . build go.tahirmurata.com
